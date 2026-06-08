@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>F1 — Formula One</title>
+<style>
+
+  body, h1, h2, p, ul{margin: 0px; padding: 0px}
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;700&display=swap');
+@font-face{font-family:'Futura';src:local('Futura'),local('Futura-Medium');}
+
+:root{
+  --red:#E10600;
+  --nav:64px;
+  --fen:'Futura','Trebuchet MS',Arial,sans-serif;
+  --fkr:'IBM Plex Sans KR','Apple SD Gothic Neo',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;cursor:default;}
+
+/* ─── WRAP ─── */
+#wrap{
+  display:flex;
+  height:100vh;
+  width:max-content;
+  will-change:transform;
+}
+
+/* ─── NAV ─── */
+#nav{
+  position:fixed;top:0;left:0;
+  width:100%;height:var(--nav);
+  background:var(--red);
+  z-index:9000;
+  display:none;align-items:center;
+  justify-content:space-between;
+  padding:0 64px;
+}
+#nav.on{display:flex;}
+.ni{
+  font-family:var(--fen);font-size:19px;font-weight:700;
+  letter-spacing:.06em;text-transform:capitalize;
+  color:rgba(255,255,255,.45);cursor:pointer;
+  transition:color .3s;user-select:none;white-space:nowrap;
+}
+.ni.active{color:#fff;}
+
+/* ─── PROGRESS BAR ─── */
+#pbar{position:fixed;bottom:0;left:0;height:2px;background:var(--red);z-index:9001;width:0%;}
+
+/* ════════════════════════════════
+   S0 — 로고 인트로 (검정 + F1 로고 차오름)
+════════════════════════════════ */
+#s-logo{
+  position:relative;
+  width:100vw;min-width:1280px;height:100vh;
+  flex-shrink:0;overflow:hidden;background:#000;
+}
+#logo-wrap{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+}
+#intro-logo{
+  width:62vw;
+  max-width:1200px;
+  height:auto;
+  clip-path:inset(0 100% 0 0);
+  animation:revealLogo 1.8s cubic-bezier(.16,1,.3,1) .4s forwards;
+}
+@keyframes revealLogo{
+  from{clip-path:inset(0 100% 0 0);}
+  to  {clip-path:inset(0 0 0 0);}
+}
+
+/* ════════════════════════════════
+   S1 — 동영상 화면
+════════════════════════════════ */
+#s-intro{
+  position:relative;
+  width:100vw;min-width:1280px;height:100vh;
+  flex-shrink:0;overflow:hidden;background:#000;
+}
+#intro-video{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  pointer-events:none;
+}
+
+/* ════════════════════════════════
+   S2 — ABOUT
+════════════════════════════════ */
+#s-about{
+  position:relative;
+  width:4800px;
+  height:100vh;
+  flex-shrink:0;
+  background:var(--red);
+  overflow:hidden;
+}
+
+#about-car{
+  position:fixed;
+  top:calc(var(--nav) + 18px);
+  left:0;
+  width:1000px;
+  z-index:400;
+  pointer-events:none;
+  filter:drop-shadow(0 24px 64px rgba(0,0,0,.6));
+  will-change:transform;
+  transform:translateX(-1100px);
+  opacity:0;
+}
+
+.ap{
+  position:absolute;top:0;
+  width:1600px;height:100%;
+  display:flex;flex-direction:column;
+  justify-content:flex-end;
+  padding-bottom:90px;
+}
+#ap1{left:0;      padding-left:100px;  align-items:flex-start; text-align:left;}
+#ap2{left:1600px; align-items:center;  text-align:center;}
+#ap3{left:3200px; padding-right:100px; align-items:flex-end;   text-align:right;}
+
+.ap-in{
+  max-width:1400px;
+  display:flex;
+  flex-direction:column;
+}
+
+.ah{
+  font-family:var(--fkr);
+  font-size:150px;
+  font-weight:700;
+  color:#fff;
+  line-height:1.0;
+  letter-spacing:-.035em;
+  white-space:nowrap;
+  margin-bottom:40px;
+}
+
+.ab{
+  font-family:var(--fkr);
+  font-size:20px;
+  font-weight:300;
+  color:rgba(255,255,255,.85);
+  line-height:1.9;
+  word-break:keep-all;
+  max-width:1000px;
+}
+#ap2 .ab{margin:0 auto;}
+#ap3 .ab{margin-left:auto;}
+
+/* ════════════════════════════════
+   S4 — CIRCUIT GRID
+════════════════════════════════ */
+#s-grid{
+  position:relative;
+  width:100vw;min-width:1280px;height:100vh;
+  flex-shrink:0;background:#000;overflow:hidden;
+}
+#grid{
+  position:absolute;
+  top:var(--nav);left:0;right:0;bottom:0;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  grid-template-rows:repeat(4,1fr);
+  gap:3px;
+  transition:transform .3s ease;
+}
+.gc{position:relative;overflow:hidden;background:#080808;}
+.gc img{
+  width:100%;height:100%;
+  object-fit:contain;padding:12px;
+  display:block;opacity:0;
+  transition:opacity .4s ease;
+}
+.gc img.on{opacity:1;}
+.gc .mask{
+  position:absolute;inset:0;
+  background:#000;opacity:0;
+  pointer-events:none;
+  transition:opacity .45s ease;
+}
+
+.ov{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:500;pointer-events:none;
+  opacity:0;transition:opacity .7s ease;
+  padding:0 8vw;
+}
+.ov.on{opacity:1;}
+.ov span{
+  font-family:var(--fkr);
+  font-size:clamp(40px,5vw,76px);
+  font-weight:700;
+  color:#fff;
+  letter-spacing:-.02em;
+  line-height:1.3;
+  display:block;
+  text-align:center;
+  text-shadow:0 4px 40px rgba(0,0,0,.6);
+}
+
+.ov-white{
+  position:fixed;inset:0;
+  background:#FFFFFF;
+  z-index:480;
+  display:flex;align-items:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .6s ease;
+}
+.ov-white.on{opacity:1;}
+.ov-24-inner{
+  width:100%;
+  max-width:1500px;
+  margin:0 auto;
+  padding:0 7vw;
+}
+.ov-24-sub{
+  font-family:var(--fkr);
+  font-size:clamp(22px,2.2vw,34px);
+  font-weight:700;
+  color:var(--red);
+  margin-bottom:8px;
+}
+.ov-24-big{
+  font-family:var(--fkr);
+  font-size:clamp(120px,15vw,240px);
+  font-weight:700;
+  color:var(--red);
+  line-height:.92;
+  letter-spacing:-.03em;
+  margin-bottom:36px;
+}
+.ov-24-body{
+  font-family:var(--fkr);
+  font-size:clamp(18px,1.6vw,26px);
+  font-weight:400;
+  color:var(--red);
+  line-height:1.7;
+  word-break:keep-all;
+  max-width:1400px;
+}
+
+/* ════════════════════════════════
+   S4(연속) — ICONIC (3 카드)
+════════════════════════════════ */
+#s-iconic{
+  position:relative;
+  width:2400px;
+  height:100vh;
+  flex-shrink:0;background:#000;overflow:hidden;
+}
+#iconic-cards{
+  position:absolute;inset:0;
+  padding-top:var(--nav);
+  display:flex;
+}
+.ic{
+  width:800px;flex-shrink:0;
+  position:relative;overflow:hidden;cursor:pointer;background:#000;
+}
+
+.ic-flag{
+  position:absolute;inset:0;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:cover;
+  transition:transform .45s ease;
+}
+.ic:hover .ic-flag{transform:scale(1.03);}
+
+.ic-img{
+  position:absolute;top:44%;left:50%;
+  transform:translate(-50%,-50%);
+  width:66%;max-height:60%;
+  object-fit:contain;
+  transition:transform .4s ease;
+}
+.ic:hover .ic-img{transform:translate(-50%,-50%) scale(1.05);}
+
+.ic-name{
+  position:absolute;bottom:64px;left:0;right:0;
+  text-align:center;
+  font-family:var(--fen);font-size:52px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;color:#fff;
+  text-shadow:0 2px 24px rgba(0,0,0,.55);
+}
+
+/* ════════════════════════════════
+   S5 — TEAM (11개 팀)
+════════════════════════════════ */
+#s-team{
+  position:relative;
+  width:100vw;min-width:1280px;height:100vh;
+  flex-shrink:0;background:#000;overflow:hidden;
+  padding-top:var(--nav);
+}
+
+#team-intro-car{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:62%;
+  z-index:30;
+  pointer-events:none;
+  opacity:0;
+  filter:drop-shadow(0 30px 60px rgba(0,0,0,.6));
+}
+
+#team-strip{
+  position:absolute;
+  top:var(--nav);left:0;right:0;bottom:0;
+  display:flex;
+  opacity:0;
+  transition:opacity .5s ease;
+}
+#team-strip.on{opacity:1;}
+
+.tslice{
+  position:relative;
+  flex:1 1 0;
+  height:100%;
+  overflow:hidden;
+  cursor:pointer;
+  transition:flex-grow .55s cubic-bezier(.22,1,.36,1);
+}
+#team-strip .tslice:hover{ flex-grow:10; }
+
+.tslice-car{
+  position:absolute;
+  top:50%;
+  pointer-events:none;
+  max-width:none;
+  transform-origin: 50% 50%;
+}
+
+.tslice-detail{
+  position:absolute;
+  top:0;bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:50vw;
+  opacity:0;
+  transition:opacity .35s ease .3s;
+  pointer-events:none;
+  display:block;
+}
+.tslice:hover .tslice-detail{ opacity:1; }
+.tslice:hover .tslice-car{ opacity:0; transition:opacity .3s; }
+
+.td-name{
+  position:absolute;top:9%;left:6%;
+  max-width:60%;
+  font-family:var(--fen);font-weight:700;
+  font-size:clamp(34px,3vw,68px);
+  color:#111;line-height:1.02;
+}
+.td-desc{
+  position:absolute;top:11%;right:6%;
+  width:42%;
+  font-family:var(--fkr);font-weight:400;
+  font-size:clamp(13px,0.95vw,17px);
+  line-height:1.7;color:#111;
+  text-align:right;word-break:keep-all;
+}
+.td-car{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-46%);
+  width:88%;max-height:42%;
+  object-fit:contain;
+  filter:drop-shadow(0 24px 50px rgba(0,0,0,.3));
+}
+.td-pu{
+  position:absolute;bottom:10%;left:6%;
+  max-width:44%;
+  font-family:var(--fen);font-weight:700;
+  font-size:clamp(16px,1.4vw,30px);color:#111;
+  white-space:nowrap;
+}
+.td-base{
+  position:absolute;bottom:10%;right:6%;
+  max-width:44%;
+  font-family:var(--fen);font-weight:700;
+  font-size:clamp(16px,1.4vw,30px);color:#111;
+  white-space:nowrap;text-align:right;
+}
+
+.tslice.dark .td-name,
+.tslice.dark .td-desc,
+.tslice.dark .td-pu,
+.tslice.dark .td-base{ color:#fff; }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <span class="ni" data-t="s-about">About</span>
+  <span class="ni" data-t="s-grid">Circuits</span>
+  <span class="ni" data-t="s-team">Team</span>
+  <span class="ni" data-t="s-iconic">Drivers</span>
+  <span class="ni" data-t="s-iconic">Fit Stop</span>
+  <span class="ni" data-t="s-iconic">The Machine</span>
+</nav>
+<div id="pbar"></div>
+
+<div id="ov-24" class="ov-white">
+  <div class="ov-24-inner">
+    <p class="ov-24-sub">F1에는 총</p>
+    <h2 class="ov-24-big">24개의 코스</h2>
+    <p class="ov-24-body">가 존재한다. 각 서킷은 개최 국가 도시의 문화, 지형, 역사적 배경을 바탕으로 서로 다른 특징을 가지고 있으며, 고속 직선 구간 중심의 서킷부터 정교한 코너 공략이 요구되는 테크니컬 서킷까지 다양한 형태로 구성되어 있다. 또한 도심 한가운데를 질주하는 스트리트 서킷과 자연 지형을 활용한 전통적인 레이싱 서킷이 공존하며 각기 다른 레이스 양상을 만들어낸다. 이러한 24개의 서킷은 단순한 경기장이 아닌 F1의 역사와 정체성을 담고 있는 무대이며, 드라이버와 팀에게 매 경기 새로운 도전과 전략을 요구하는 중요한 요소로 작용한다.</p>
+  </div>
+</div>
+
+<div id="ov-f1" class="ov">
+  <span>그 중 F1의 상징인 코스 3가지를 소개한다.</span>
+</div>
+
+<img id="about-car" src="Car/Redbull car.png" alt="F1 Car"/>
+
+<div id="wrap">
+
+  <section id="s-logo">
+    <div id="logo-wrap">
+      <img id="intro-logo" src="F1 logo.png" alt="Formula 1"/>
+    </div>
+  </section>
+
+  <section id="s-intro">
+    <video id="intro-video" src="Driving.mp4" autoplay muted loop playsinline></video>
+  </section>
+
+  <section id="s-about">
+    <div class="ap" id="ap1">
+      <div class="ap-in">
+        <h2 class="ah">극한의 엔지니어링</h2>
+        <p class="ab">F1 머신은 단순한 자동차가 아니라 아스팔트 위를 낮게 비행하는 전투기에 가깝다. 1000마력 이상의 하이브리드 파워유닛과 다운포스를 생성하는 공기역학적 설계는 현대 기계공학의 정점이며, 부품 하나하나가 철저한 계산과 시뮬레이션 끝에 탄생한다. 시즌이 시작된 후에도 수천 번의 업데이트가 이루어지며, 머신은 레이스를 거듭할수록 끊임없이 진화한다.</p>
+      </div>
+    </div>
+
+    <div class="ap" id="ap2">
+      <div class="ap-in">
+        <h2 class="ah">한계를 넘는 인간</h2>
+        <p class="ab">레이스 내내 드라이버는 최대 5G에서 6G에 달하는 중력 가속도를 온몸으로 버텨낸다. 우주비행사가 훈련 중 경험하는 횡G와 맞먹는 압력을 견디면서도, 1초에 수십 번씩 스티어링 휠의 버튼을 조작하고 트랙의 모든 변수를 실시간으로 판단해야 시한다. 이는 인간 신체의 한계를 매 레이스마다 다시 쓰는 일이다.</p>
+      </div>
+    </div>
+
+    <div class="ap" id="ap3">
+      <div class="ap-in">
+        <h2 class="ah">찰나의 전략과 판단</h2>
+        <p class="ab">트랙 위의 질주 이면에는 수백 명의 엔지니어가 실시간으로 분석하는 방대한 텔레메트리 데이터가 존재한다. 타이어 마모도, 노면 온도, 연료 소모량, 피트스톱 타이밍까지 수백 개의 변수를 동시에 통제하며, 0.001초의 차이가 승패를 가르는 치밀한 두뇌 싸움이 매 순간 펼쳐진다. F1은 속도만의 스포츠가 아니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-grid">
+    <div id="grid"></div>
+  </section>
+
+  <section id="s-iconic">
+    <div id="iconic-cards">
+      <div class="ic" onclick="go('monaco')">
+        <div class="ic-flag" style="background-image:url('Gonfalon/Monaco.png')"></div>
+        <img class="ic-img" src="Circuts/Circut 8 i.png" alt="Monaco"/>
+        <div class="ic-name">Monaco</div>
+      </div>
+      <div class="ic" onclick="go('belgium')">
+        <div class="ic-flag" style="background-image:url('Gonfalon/Belgium.png')"></div>
+        <img class="ic-img" src="Circuts/Circut 13 i.png" alt="Belgium"/>
+        <div class="ic-name">Belgium</div>
+      </div>
+      <div class="ic" onclick="go('italy')">
+        <div class="ic-flag" style="background-image:url('Gonfalon/Italy.png')"></div>
+        <img class="ic-img" src="Circuts/Circut 16 i.png" alt="Italy"/>
+        <div class="ic-name">Italy</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-team">
+    <img id="team-intro-car" src="Car/Redbull car.png" alt="" />
+    <div id="team-strip">
+    </div>
+  </section>
+
+</div>
+
+<script>
+let curX = 0, tgtX = 0, maxX = 0;
+let navShown = false;
+let gridAcc = 0;
+const VGRID = 3500;
+let pinned = null;
+
+const wrap = document.getElementById('wrap');
+const nav  = document.getElementById('nav');
+const pbar = document.getElementById('pbar');
+const nis  = document.querySelectorAll('.ni');
+const car  = document.getElementById('about-car');
+const ov24 = document.getElementById('ov-24');
+const ovF1 = document.getElementById('ov-f1');
+
+const SP = [8,13,16];
+
+(function(){
+  const g = document.getElementById('grid');
+  const order = [...Array(24).keys()];
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i],order[j]] = [order[j],order[i]];
+  }
+
+  for(let i=1;i<=24;i++){
+    const c = document.createElement('div');
+    c.className='gc'; c.dataset.n=i;
+    c.dataset.order = order[i-1];
+
+    const m = document.createElement('div');
+    m.className='mask'; c.appendChild(m);
+
+    const img = document.createElement('img');
+    img.src=`Circuts/Circut ${i}${SP.includes(i)?' i':''}.png`;
+    img.loading='lazy';
+    c.appendChild(img);
+
+    g.appendChild(c);
+  }
+})();
+
+const TEAMS = [
+  { name:'Alpine',        color:'#00A1E9', img:'Car/Alpine car.png',
+    desc:'프랑스 스포츠카 브랜드 Alpine이 운영하는 F1 팀이다. 엔스톤 공장을 중심으로 차량을 개발하며, 독창적인 기술력과 공격적인 레이스 전략을 바탕으로 경쟁하고 있다. 젊고 역동적인 브랜드 이미지를 F1 무대에서 보여주는 팀이다.',
+    pu:'Renault', base:'Enstone, United Kingdom' },
+  { name:'Aston Martin',  color:'#229971', img:'Car/Astonmartin car.png',
+    desc:'영국의 럭셔리 스포츠카 브랜드 Aston Martin이 운영하는 팀이다. 최근 대규모 시설 투자와 기술 인력 영입을 통해 꾸준히 경쟁력을 높이고 있으며, 정교한 엔지니어링과 장기적인 성장 전략을 추구하고 있다.',
+    pu:'Mercedes', base:'Silverstone, United Kingdom' },
+  { name:'Audi',          color:'#FE2E00', img:'Car/Audi car.png',
+    desc:'독일을 대표하는 자동차 제조사 Audi가 2026 시즌부터 본격적으로 F1에 참여한다. 르망과 내구레이스에서 쌓아온 모터스포츠 경험을 바탕으로 독자적인 파워 유닛 개발에 집중하며 새로운 시대를 준비하고 있다.',
+    pu:'Audi', base:'Hinwil, Switzerland' },
+  { name:'Cadillac',      color:'#AAAAAC', img:'Car/Cadillac car.png',
+    desc:'미국을 대표하는 자동차 브랜드 Cadillac이 General Motors와 함께 F1 프로젝트를 진행하고 있다. 미국 모터스포츠의 성장과 함께 새로운 제조사 경쟁 구도를 만들며 F1의 글로벌 확장을 이끌고 있는 팀이다.',
+    pu:'General Motors', base:'United States' },
+  { name:'Ferrari',       color:'#E9022E', img:'Car/Ferrari car.png',
+    desc:'1950년 F1 출범 이후 단 한 번도 빠지지 않고 참가한 유일한 팀이다. 우승 최대 기록, 수많은 챔피언과 전설적인 드라이버를 배출했으며, F1의 역사와 가장 깊게 연결된 상징적인 존재로 평가받는다.',
+    pu:'Ferrari', base:'Maranello, Italy' },
+  { name:'Haas F1 Team',  color:'#E0E1E3', img:'Car/Haasf1team car.png',
+    desc:'미국 국적의 유일한 F1 팀으로 효율적인 운영 구조를 바탕으로 경쟁하고 있다. Ferrari와 긴밀하게 협력하며 현실적인 개발 전략을 통해 꾸준한 성장을 목표로 하는 팀이다.',
+    pu:'Ferrari', base:'Kannapolis, United States',
+    carFix: { scale: 1.15, y: -56 }
+  },
+  { name:'McLaren',       color:'#FF7F00', img:'Car/Mclaren car.png',
+    desc:'1966년부터 F1에 참가한 전통의 명문 팀이다. 뛰어난 기술 혁신과 수많은 우승 기록을 보유하고 있으며, 최근에는 다시 선두권 경쟁에 복귀하며 강력한 퍼포먼스를 보여주고 있다.',
+    pu:'Mercedes', base:'Woking, United Kingdom' },
+  { name:'Mercedes',      color:'#24F6D1', img:'Car/Mercedes car.png',
+    desc:'하이브리드 시대를 대표하는 가장 성공적인 팀 중 하나이다. 뛰어난 엔지니어링 기술과 안정적인 차량 성능을 바탕으로 여러 차례 월드 챔피언십을 석권하며 현대 F1의 기준을 만들어왔다.',
+    pu:'Mercedes', base:'Brackley, United Kingdom' },
+  { name:'Racing Bulls',  color:'#6692FF', img:'Car/Racingbulls car.png',
+    desc:'Red Bull Racing의 자매 팀으로 젊은 드라이버 육성과 신인 발굴을 담당하고 있다. 새로운 기술과 전략을 실험하는 역할도 수행하며 미래의 스타 드라이버를 배출하는 중요한 팀이다.',
+    pu:'Honda RBPT', base:'Faenza, Italy' },
+  { name:'Red Bull Racing', color:'#3771C5', img:'Car/Redbull car.png',
+    desc:'공격적인 개발 철학과 뛰어난 공기역학 기술을 바탕으로 현대 F1을 대표하는 강팀으로 자리 잡았다. 혁신적인 차량 설계와 과감한 전략 운영을 통해 수많은 우승을 기록하고 있다.',
+    pu:'Honda RBPT', base:'Milton Keynes, United Kingdom' },
+  { name:'Williams',      color:'#1768DB', img:'Car/Williams car.png',
+    desc:'F1 역사상 세번째로 많은 우승 기록을 보유한 전통의 명문 팀 중 하나이다. 수많은 챔피언 드라이버를 배출했으며, 현재는 과거의 영광을 되찾기 위해 새로운 도약을 준비하고 있다.',
+    pu:'Mercedes', base:'Grove, United Kingdom' },
+];
+
+(function buildTeams(){
+  const strip = document.getElementById('team-strip');
+  TEAMS.forEach((t, i)=>{
+    const slice = document.createElement('div');
+    slice.className = 'tslice';
+    slice.dataset.idx = i;
+    slice.style.background = t.color;
+
+    const c = t.color.replace('#','');
+    const r=parseInt(c.slice(0,2),16), g2=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+    const lum = (0.299*r + 0.587*g2 + 0.114*b);
+    if(lum < 110) slice.classList.add('dark');
+
+    const carImg = document.createElement('img');
+    carImg.className = 'tslice-car';
+    carImg.src = t.img;
+    carImg.alt = '';
+    
+    if (t.carFix) {
+      carImg.dataset.scale = t.carFix.scale;
+      carImg.dataset.y = t.carFix.y;
+    } else {
+      carImg.dataset.scale = 1;
+      carImg.dataset.y = -50;
+    }
+
+    slice.appendChild(carImg);
+
+    const detail = document.createElement('div');
+    detail.className = 'tslice-detail';
+    detail.innerHTML = `
+      <div class="td-name">${t.name}</div>
+      <div class="td-desc">${t.desc}</div>
+      <img class="td-car" src="${t.img}" alt="${t.name}"/>
+      <div class="td-pu">Power Unit : ${t.pu}</div>
+      <div class="td-base">Base : ${t.base}</div>
+    `;
+    slice.appendChild(detail);
+    strip.appendChild(slice);
+  });
+})();
+
+function positionTeamCars(){
+  const strip = document.getElementById('team-strip');
+  if(!strip) return;
+  const stripW = strip.clientWidth;
+  const sliceW = stripW / TEAMS.length;
+
+  document.querySelectorAll('.tslice-car').forEach((img, i)=>{
+    img.style.width  = stripW + 'px';
+    img.style.height = 'auto';
+    img.style.left   = (-i * sliceW) + 'px';
+    
+    const sc = img.dataset.scale || 1;
+    const y = img.dataset.y || -50;
+    img.style.transform = `translateY(${y}%) scale(${sc})`;
+  });
+}
+window.addEventListener('resize', positionTeamCars);
+window.addEventListener('load', positionTeamCars);
+positionTeamCars();
+
+function calcMax(){
+  maxX = wrap.scrollWidth - window.innerWidth;
+}
+calcMax();
+window.addEventListener('resize', calcMax);
+
+function sLeft(id){ return document.getElementById(id).offsetLeft; }
+
+window.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const d = e.deltaY;
+
+  if(pinned === 'grid'){
+    if(d > 0){
+      gridAcc = Math.min(VGRID, gridAcc + d * 1.2);
+      if(gridAcc >= VGRID){
+        pinned = null;
+        tgtX = sLeft('s-iconic');
+      }
+    } else {
+      gridAcc = Math.max(0, gridAcc + d * 1.2);
+      if(gridAcc <= 0){
+        pinned = null;
+        tgtX = sLeft('s-grid') - 20;
+      }
+    }
+    return;
+  }
+  tgtX = Math.max(0, Math.min(maxX, tgtX + d * 1.8));
+},{passive:false});
+
+let tx0=0;
+window.addEventListener('touchstart',e=>{ tx0=e.touches[0].clientX; });
+window.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const d=tx0-e.touches[0].clientX; tx0=e.touches[0].clientX;
+  tgtX=Math.max(0,Math.min(maxX,tgtX+d*2));
+},{passive:false});
+
+function updateCar(x){
+  const aboutEl = document.getElementById('s-about');
+  const aboutL  = aboutEl.offsetLeft;
+  const aboutW  = aboutEl.offsetWidth;
+
+  const viewL = aboutL - x;
+  const viewR = viewL + aboutW;
+  if(viewR < -300 || viewL > window.innerWidth + 300){
+    car.style.opacity = '0';
+    return;
+  }
+
+  const totalTravel = aboutW + window.innerWidth;
+  const progress = (x - (aboutL - window.innerWidth)) / totalTravel;
+  const p = Math.max(0, Math.min(1, progress));
+
+  const from = -1100;
+  const to   = window.innerWidth + 100;
+  const carX = from + p * (to - from);
+  car.style.transform = `translateX(${carX}px)`;
+
+  let op = 1;
+  if(p < 0.035)      op = p / 0.035;
+  else if(p > 0.93)  op = 1 - (p - 0.93) / 0.07;
+  car.style.opacity  = String(Math.max(0, Math.min(1, op)));
+}
+
+function updateGrid(){
+  const cells=[...document.querySelectorAll('.gc')];
+  const fillP = Math.min(1, gridAcc / 1400);
+  cells.forEach(c=>{
+    const order = parseInt(c.dataset.order);
+    const th = (order/23)*0.9;
+    c.querySelector('img').classList.toggle('on', fillP >= th);
+  });
+
+  ov24.classList.toggle('on', gridAcc >= 1400 && gridAcc < 2300);
+
+  const maskP = gridAcc >= 2300 ? Math.min(1,(gridAcc-2300)/500) : 0;
+  cells.forEach(c=>{
+    const n=parseInt(c.dataset.n);
+    c.querySelector('.mask').style.opacity = SP.includes(n)?'0':String(maskP);
+  });
+
+  const gridEl = document.getElementById('grid');
+  gridEl.style.transform = `translateX(${-maskP * 40}px)`;
+
+  ovF1.classList.toggle('on', gridAcc >= 2950 && gridAcc < 3500);
+}
+
+function checkPinned(x){
+  const gridL = sLeft('s-grid');
+  if(x >= gridL - 2 && x < gridL + 10 && gridAcc < VGRID){
+    if(pinned !== 'grid'){
+      pinned = 'grid';
+      tgtX = gridL;
+    }
+  }
+}
+
+const secMap=[
+  {id:'s-logo',   ni:-1},
+  {id:'s-intro',  ni:-1},
+  {id:'s-about',  ni:0},
+  {id:'s-grid',   ni:1},
+  {id:'s-iconic', ni:1},
+  {id:'s-team',   ni:2},
+];
+function updateNav(x){
+  let active=-1;
+  secMap.forEach(s=>{
+    const el=document.getElementById(s.id); if(!el) return;
+    const l=el.offsetLeft,r=l+el.offsetWidth;
+    if(x+window.innerWidth*.5>=l && x<r) active=s.ni;
+  });
+  nis.forEach((n,i)=>n.classList.toggle('active',i===active));
+
+  if(!navShown && x >= sLeft('s-intro') - window.innerWidth*.4){
+    navShown=true; nav.classList.add('on');
+  }
+}
+
+const teamIntroCar = document.getElementById('team-intro-car');
+const teamStrip    = document.getElementById('team-strip');
+function updateTeam(x){
+  const el = document.getElementById('s-team');
+  if(!el) return;
+  const L = el.offsetLeft;
+  const vw = window.innerWidth;
+
+  const p = Math.max(0, Math.min(1, (x - (L - vw)) / vw));
+
+  if(p <= 0){
+    teamIntroCar.style.opacity = '0';
+    teamStrip.classList.remove('on');
+    return;
+  }
+
+  if(p < 0.85){
+    const fromX = -vw*0.6;
+    const toX   = 0;
+    const cx = fromX + (p/0.85) * (toX - fromX);
+    teamIntroCar.style.transform = `translate(calc(-50% + ${cx}px), -50%)`;
+    teamIntroCar.style.opacity = '1';
+    teamStrip.classList.remove('on');
+  } else {
+    teamIntroCar.style.opacity = '0';
+    teamStrip.classList.add('on');
+  }
+}
+
+function loop(){
+  if(pinned === 'grid') tgtX = sLeft('s-grid');
+
+  curX += (tgtX - curX) * 0.12;
+  if(Math.abs(tgtX - curX) < 0.2) curX = tgtX;
+
+  wrap.style.transform = `translateX(${-curX}px)`;
+
+  checkPinned(curX);
+  updateCar(curX);
+  updateGrid();
+  updateTeam(curX);
+  updateNav(curX);
+  pbar.style.width = maxX > 0 ? (curX/maxX*100)+'%' : '0%';
+
+  requestAnimationFrame(loop);
+}
+loop();
+
+nis.forEach(n=>{
+  n.addEventListener('click',()=>{
+    const el=document.getElementById(n.dataset.t);
+    if(!el) return;
+    pinned=null;
+    tgtX=Math.min(maxX,el.offsetLeft);
+  });
+});
+
+function go(c){
+  const m={monaco:'detail-monaco.html',belgium:'detail-belgium.html',italy:'detail-italy.html'};
+  if(!m[c]) return;
+  try{
+    sessionStorage.setItem('f1_scrollX', String(curX));
+    sessionStorage.setItem('f1_gridAcc', String(gridAcc));
+  }catch(e){}
+  location.href=m[c];
+}
+
+function restoreScroll(){
+  calcMax();
+
+  let savedX = null, savedGrid = null;
+  try{
+    savedX    = sessionStorage.getItem('f1_scrollX');
+    savedGrid = sessionStorage.getItem('f1_gridAcc');
+  }catch(e){}
+
+  if(savedX !== null){
+    const x = parseFloat(savedX);
+    const g = savedGrid !== null ? parseFloat(savedGrid) : 0;
+
+    curX = x; tgtX = x;
+    gridAcc = g;
+    if(g >= VGRID) pinned = null;
+
+    if(x >= sLeft('s-intro') - window.innerWidth*0.4){
+      navShown = true;
+      nav.classList.add('on');
+    }
+
+    const logo = document.getElementById('intro-logo');
+    if(logo) logo.style.clipPath = 'inset(0 0 0 0)';
+
+    try{
+      sessionStorage.removeItem('f1_scrollX');
+      sessionStorage.removeItem('f1_gridAcc');
+    }catch(e){}
+  }
+}
+if(document.readyState === 'complete') restoreScroll();
+else window.addEventListener('load', restoreScroll);
+window.addEventListener('pageshow', e=>{ if(e.persisted) restoreScroll(); });
+</script>
+</body>
+</html>
